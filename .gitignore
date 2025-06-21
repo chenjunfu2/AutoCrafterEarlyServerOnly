@@ -38,3 +38,7 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
+
+# other
+polymer-dev-1.20.zip
+polymer-dev-1.20/
