@@ -1,14 +1,14 @@
-package chenjunfu2.autocrafterearlyserveronly;
+package chenjunfu2.crafter;
 
-import chenjunfu2.autocrafterearlyserveronly.registry.ModBlockEntities;
-import chenjunfu2.autocrafterearlyserveronly.registry.ModBlocks;
+import chenjunfu2.crafter.registry.ModBlockEntities;
+import chenjunfu2.crafter.registry.ModBlocks;
 import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AutoCrafterEarlyServerOnly implements ModInitializer {
-	public static final String MOD_ID = "autocrafterearlyserveronly";
+public class Crafter implements ModInitializer {
+	public static final String MOD_ID = "crafter";
 
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.

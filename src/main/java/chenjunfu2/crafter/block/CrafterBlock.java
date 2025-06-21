@@ -1,11 +1,11 @@
-package chenjunfu2.autocrafterearlyserveronly.block;
+package chenjunfu2.crafter.block;
 
-import chenjunfu2.autocrafterearlyserveronly.block.entity.CrafterBlockEntity;
-import chenjunfu2.autocrafterearlyserveronly.recipe.RecipeCache;
-import chenjunfu2.autocrafterearlyserveronly.registry.ModBlockEntities;
-import chenjunfu2.autocrafterearlyserveronly.registry.ModProperties;
-import chenjunfu2.autocrafterearlyserveronly.registry.ModWorldEvents;
-import chenjunfu2.autocrafterearlyserveronly.util.ItemScattererAccessor;
+import chenjunfu2.crafter.block.entity.CrafterBlockEntity;
+import chenjunfu2.crafter.recipe.RecipeCache;
+import chenjunfu2.crafter.registry.ModBlockEntities;
+import chenjunfu2.crafter.registry.ModProperties;
+import chenjunfu2.crafter.registry.ModWorldEvents;
+import chenjunfu2.crafter.util.ItemScattererAccessor;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -28,7 +28,6 @@ import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.*;

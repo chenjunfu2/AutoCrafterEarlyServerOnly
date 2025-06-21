@@ -1,4 +1,4 @@
-package chenjunfu2.autocrafterearlyserveronly.registry;
+package chenjunfu2.crafter.registry;
 
 public interface ModWorldEvents
 {

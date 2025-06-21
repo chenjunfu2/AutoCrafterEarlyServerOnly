@@ -1,4 +1,4 @@
-package chenjunfu2.autocrafterearlyserveronly.registry;
+package chenjunfu2.crafter.registry;
 
 import net.minecraft.block.enums.JigsawOrientation;
 import net.minecraft.state.property.BooleanProperty;

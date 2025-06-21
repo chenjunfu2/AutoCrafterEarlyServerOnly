@@ -1,4 +1,4 @@
-package chenjunfu2.autocrafterearlyserveronly.recipe;
+package chenjunfu2.crafter.recipe;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;

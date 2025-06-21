@@ -1,4 +1,4 @@
-package chenjunfu2.autocrafterearlyserveronly.util;
+package chenjunfu2.crafter.util;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;

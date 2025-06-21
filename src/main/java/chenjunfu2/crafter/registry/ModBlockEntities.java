@@ -1,12 +1,11 @@
-package chenjunfu2.autocrafterearlyserveronly.registry;
+package chenjunfu2.crafter.registry;
 
-import chenjunfu2.autocrafterearlyserveronly.block.entity.CrafterBlockEntity;
+import chenjunfu2.crafter.block.entity.CrafterBlockEntity;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
 
 public class ModBlockEntities
 {

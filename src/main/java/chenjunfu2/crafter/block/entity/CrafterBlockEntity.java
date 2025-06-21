@@ -1,7 +1,7 @@
-package chenjunfu2.autocrafterearlyserveronly.block.entity;
+package chenjunfu2.crafter.block.entity;
 
-import chenjunfu2.autocrafterearlyserveronly.block.CrafterBlock;
-import chenjunfu2.autocrafterearlyserveronly.registry.ModBlockEntities;
+import chenjunfu2.crafter.block.CrafterBlock;
+import chenjunfu2.crafter.registry.ModBlockEntities;
 import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
