@@ -2,6 +2,7 @@ package chenjunfu2.crafter.block.entity;
 
 import chenjunfu2.crafter.block.CrafterBlock;
 import chenjunfu2.crafter.registry.ModBlockEntities;
+import chenjunfu2.crafter.screen.CrafterScreenHandler;
 import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -15,7 +16,6 @@ import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.RecipeMatcher;
-//import net.minecraft.screen.CrafterScreenHandler;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
@@ -70,8 +70,7 @@ public class CrafterBlockEntity extends LootableContainerBlockEntity implements 
 	
 	@Override
 	protected ScreenHandler createScreenHandler(int syncId, PlayerInventory playerInventory) {
-		//return new CrafterScreenHandler(syncId, playerInventory, this, this.propertyDelegate);
-		return null;
+		return null;//new CrafterScreenHandler(syncId, playerInventory, this, this.propertyDelegate);
 	}
 	
 	public void setSlotEnabled(int slot, boolean enabled) {

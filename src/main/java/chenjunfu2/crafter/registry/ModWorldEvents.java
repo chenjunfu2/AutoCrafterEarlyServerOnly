@@ -1,8 +1,8 @@
 package chenjunfu2.crafter.registry;
 
-public interface ModWorldEvents
+public class ModWorldEvents
 {
-	int CRAFTER_CRAFTS = 1049;
-	int CRAFTER_FAILS = 1050;
-	int CRAFTER_SHOOTS = 2010;
+	public static final int CRAFTER_CRAFTS = 1049;
+	public static final int CRAFTER_FAILS = 1050;
+	public static final int CRAFTER_SHOOTS = 2010;
 }
