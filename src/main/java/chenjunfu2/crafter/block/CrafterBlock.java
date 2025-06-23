@@ -1,7 +1,7 @@
 package chenjunfu2.crafter.block;
 
 import chenjunfu2.crafter.block.entity.CrafterBlockEntity;
-import chenjunfu2.crafter.gui.CrafterGUI;
+import chenjunfu2.crafter.gui.CrafterVirtualGUI;
 import chenjunfu2.crafter.recipe.RecipeCache;
 import chenjunfu2.crafter.registry.ModBlockEntities;
 import chenjunfu2.crafter.registry.ModProperties;
@@ -12,7 +12,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 //import eu.pb4.polymer.networking.api.*;
-import eu.pb4.polymer.networking.api.PolymerServerNetworking;
 import net.fabricmc.fabric.mixin.object.builder.AbstractBlockAccessor;
 import net.minecraft.block.*;
 import net.minecraft.block.dispenser.ItemDispenserBehavior;
@@ -28,12 +27,13 @@ import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.CraftingRecipe;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -156,18 +156,17 @@ public class CrafterBlock extends BlockWithEntity implements PolymerBlock
 	
 	@Override
 	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-		if (world.isClient)
-		{
+		if (world.isClient) {
 			return ActionResult.SUCCESS;
-		}
-		else
-		{
+		} else {
 			BlockEntity blockEntity = world.getBlockEntity(pos);
-			if (blockEntity instanceof CrafterBlockEntity && player instanceof ServerPlayerEntity)
-			{
-				CrafterGUI gui = new CrafterGUI((ServerPlayerEntity)player, (CrafterBlockEntity)blockEntity);
-				gui.open();
-				//player.openHandledScreen((CrafterBlockEntity)blockEntity);
+			if (blockEntity instanceof CrafterBlockEntity) {
+				//在这里判断playerEntity，如果是客户端有mod的，走正常逻辑，否则打开虚拟物品栏
+				//if(xxx)
+				//{a
+				//	player.openHandledScreen((CrafterBlockEntity)blockEntity);
+				//}
+				player.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inventory, p) -> new CrafterVirtualGUI(syncId,player,(CrafterBlockEntity)blockEntity), Text.of("Crafter")));
 			}
 			
 			return ActionResult.CONSUME;

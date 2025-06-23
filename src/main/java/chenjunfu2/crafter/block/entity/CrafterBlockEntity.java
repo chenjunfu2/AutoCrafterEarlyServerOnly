@@ -2,7 +2,6 @@ package chenjunfu2.crafter.block.entity;
 
 import chenjunfu2.crafter.block.CrafterBlock;
 import chenjunfu2.crafter.registry.ModBlockEntities;
-import chenjunfu2.crafter.screen.CrafterScreenHandler;
 import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -63,6 +62,11 @@ public class CrafterBlockEntity extends LootableContainerBlockEntity implements 
 		super(ModBlockEntities.CRAFTER_BLOCK_ENTITY, pos, state);
 	}
 	
+	public PropertyDelegate getPropertyDelegate()
+	{
+		return propertyDelegate;
+	}
+	
 	@Override
 	protected Text getContainerName() {
 		return Text.translatable("container.crafter");
@@ -70,7 +74,8 @@ public class CrafterBlockEntity extends LootableContainerBlockEntity implements 
 	
 	@Override
 	protected ScreenHandler createScreenHandler(int syncId, PlayerInventory playerInventory) {
-		return null;//new CrafterScreenHandler(syncId, playerInventory, this, this.propertyDelegate);
+		//return new CrafterScreenHandler(syncId, playerInventory, this, this.propertyDelegate);
+		return null;
 	}
 	
 	public void setSlotEnabled(int slot, boolean enabled) {
