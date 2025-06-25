@@ -2,7 +2,6 @@ package chenjunfu2.crafter;
 
 import chenjunfu2.crafter.registry.ModBlockEntities;
 import chenjunfu2.crafter.registry.ModBlocks;
-import chenjunfu2.crafter.registry.ModScreenHandlers;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;

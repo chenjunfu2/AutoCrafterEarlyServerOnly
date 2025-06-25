@@ -1,11 +1,8 @@
 package chenjunfu2.crafter.gui;
 
-import chenjunfu2.crafter.block.CrafterBlock;
 import chenjunfu2.crafter.block.entity.CrafterBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.*;
@@ -15,46 +12,26 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 
 
 public class CrafterVirtualGUI extends GenericContainerScreenHandler implements ScreenHandlerListener//ScreenHandler implements ScreenHandlerListener
 {
 	private final PlayerEntity player;
-	private final RecipeInputInventory inputInventory;
-	private final CrafterBlockEntity blockEntity;
 	private final CrafterVirtualInventory VirtualInventory;
-	
-	public CrafterBlockEntity getBlockEntity()
-	{
-		return blockEntity;
-	}
-	
-	public CrafterVirtualInventory getVirtualInventory()
-	{
-		return VirtualInventory;
-	}
 	
 	public CrafterVirtualGUI(int syncId, PlayerEntity player, CrafterBlockEntity blockEntity)
 	{
 		super(ScreenHandlerType.GENERIC_9X3, syncId, player.getInventory(), new CrafterVirtualInventory(blockEntity), 3);
 		
+		//这个就是刚刚创建的在super内部的，Java导致必须先super初始化，所以只能用这种丑陋的方式再次从父类中获取
 		this.VirtualInventory = (CrafterVirtualInventory)super.getInventory();
 		this.player = player;
-		this.blockEntity = blockEntity;
-		this.inputInventory = blockEntity;
 		
-		//for(int slot : this.VirtualInventory.CRAFTER_SLOTS)
-		//{
-		//	this.addSlot(new CrafterVirtualInputSlot(this.VirtualInventory, this.VirtualInventory.CRAFTER_SLOTS_MAP[slot],0,0,this));
-		//}
-		//this.addSlot(new CrafterVirtualOutputSlot(this.VirtualInventory.resultInventory, this.VirtualInventory.RESULT_SLOTS, 0, 0, this));
 		this.addListener(this);
 	}
 	
 	
-	void playSound(PlayerEntity player,
+	static void playSound(PlayerEntity player,
 	               RegistryEntry<SoundEvent> sound,
 	               SoundCategory category,
 	               float volume,
@@ -67,7 +44,7 @@ public class CrafterVirtualGUI extends GenericContainerScreenHandler implements 
 	}
 	
 	private void setSlotEnabled(int slotId, boolean enabled, PlayerEntity player) {
-		this.blockEntity.setSlotEnabled(slotId, enabled);
+		this.VirtualInventory.setCrafterMapSlotEnabled(slotId, enabled);
 		this.sendContentUpdates();
 		playSound(player, SoundEvents.UI_BUTTON_CLICK, SoundCategory.MASTER, 0.4F, enabled ? 1.0F : 0.75F);
 	}
@@ -81,50 +58,44 @@ public class CrafterVirtualGUI extends GenericContainerScreenHandler implements 
 			return;
 		}
 		
-		if (VirtualInventory.canUseSlot(slot) && !player.isSpectator()) {
-			int mapSlot = VirtualInventory.CRAFTER_SLOTS_MAP[slot];
+		if (VirtualInventory.isCrafterSlot(slot) &&//首先检测槽位是否可用
+			!player.isSpectator())//并确认玩家非旁观
+		{
 			switch (actionType)
 			{
-			case PICKUP:
-				if (this.blockEntity.isSlotDisabled(mapSlot))
+			case PICKUP://点击事件
+				if (this.VirtualInventory.isCrafterMapSlotDisabled(slot))//如果合成器slot是禁用的情况下
 				{
-					this.setSlotEnabled(mapSlot,true,player);
+					this.setSlotEnabled(slot,true,player);//启用槽位
 				}
-				else if (this.blockEntity.getStack(mapSlot).isEmpty() &&
-						 this.getCursorStack().isEmpty())
+				else if (this.VirtualInventory.isCrafterMapSlotEmpty(slot) &&//如果合成器slot为空
+						 this.getCursorStack().isEmpty())//并且鼠标没悬挂物品
 				{
-					this.setSlotEnabled(mapSlot,false,player);
+					this.setSlotEnabled(slot,false,player);//那么锁定槽位
 				}
 				break;
-			case SWAP:
-				ItemStack itemStack = player.getInventory().getStack(button);
-				if (this.blockEntity.isSlotDisabled(mapSlot) && !itemStack.isEmpty())
+			case SWAP://交换物品事件
+				if (this.VirtualInventory.isCrafterMapSlotDisabled(slot) &&//如果槽位是禁用的
+					!player.getInventory().getStack(button).isEmpty())//并且玩家槽位不为空
 				{
-					this.setSlotEnabled(mapSlot,true,player);
+					this.setSlotEnabled(slot,true,player);//启用槽位，并在后面委托父类处理
 				}
 			}
 		}
 		
-		Slot slot1 = this.getSlot(slot);
-		ItemStack stack = slot1.getStack();
-		
-		NbtCompound nbt = stack.getNbt();
-		if(nbt!=null && nbt.get(VirtualInventory.VIRTUAL_ITEM_TAG) != null)
+		//如果槽位刚刚被禁用则这里直接返回，否则启用后此处不会返回，其他mod标签物品跳过处理
+		if(VirtualInventory.isVirtualItem(this.getSlot(slot).getStack()))
 		{
-			if(nbt.getBoolean(VirtualInventory.VIRTUAL_ITEM_TAG))
-			{
-				//stack.setCount(0);
-				return;
-			}
+			return;//虚拟物品跳过父类处理，防止玩家使用
 		}
 		
+		
 		super.onSlotClick(slot, button, actionType, player);
-		//this.sendContentUpdates();//强制更新回去
 	}
 	
-	private boolean canUseSlot(int slotIdx)
+	private boolean canPutSlotItem(int slotIdx)
 	{
-		return this.VirtualInventory.canUseSlot(slotIdx) && !this.blockEntity.isSlotDisabled(slotIdx);
+		return this.VirtualInventory.isCrafterSlot(slotIdx) && !this.VirtualInventory.isCrafterMapSlotDisabled(slotIdx);
 	}
 	
 	protected boolean insertItemEx(ItemStack stack,int slotIdx, int startIndex, int endIndex, boolean fromLast) {
@@ -138,10 +109,10 @@ public class CrafterVirtualGUI extends GenericContainerScreenHandler implements 
 		
 		if (stack.isStackable() &&
 			(fromLast == false ||// 玩家移动到容器 在内部while内检查
-			(fromLast == true && this.canUseSlot(slotIdx))))//容器移动到玩家，直接检查
+			(fromLast == true && this.canPutSlotItem(slotIdx))))//容器移动到玩家，直接检查
 		{
 			while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
-				if(fromLast == false && !this.canUseSlot(i))//在玩家内部移动到容器，检测容器目标i是否可用
+				if(fromLast == false && !this.canPutSlotItem(i))//在玩家内部移动到容器，检测容器目标i是否可用
 				{
 					if (fromLast) {
 						i--;
@@ -178,7 +149,7 @@ public class CrafterVirtualGUI extends GenericContainerScreenHandler implements 
 		
 		if (!stack.isEmpty() &&
 			(fromLast == false ||// 玩家移动到容器 在内部while内检查
-			(fromLast == true && this.canUseSlot(slotIdx))))//容器移动到玩家，直接检查
+			(fromLast == true && this.canPutSlotItem(slotIdx))))//容器移动到玩家，直接检查
 		{
 			if (fromLast) {
 				i = endIndex - 1;
@@ -187,7 +158,7 @@ public class CrafterVirtualGUI extends GenericContainerScreenHandler implements 
 			}
 			
 			while (fromLast ? i >= startIndex : i < endIndex) {
-				if(fromLast == false && !this.canUseSlot(i))//在玩家内部移动到容器，检测容器目标i是否可用
+				if(fromLast == false && !this.canPutSlotItem(i))//在玩家内部移动到容器，检测容器目标i是否可用
 				{
 					if (fromLast) {
 						i--;
@@ -223,8 +194,9 @@ public class CrafterVirtualGUI extends GenericContainerScreenHandler implements 
 	}
 	
 	@Override
-	public boolean canUse(PlayerEntity player) {
-		return this.inputInventory.canPlayerUse(player);
+	public boolean canUse(PlayerEntity player)
+	{
+		return this.VirtualInventory.canPlayerUse(player);
 	}
 	
 	@Override
@@ -233,20 +205,28 @@ public class CrafterVirtualGUI extends GenericContainerScreenHandler implements 
 		//可以的情况下再操作
 		ItemStack itemStack = ItemStack.EMPTY;
 		Slot slot2 = this.slots.get(slot);
-		if (slot2 != null && slot2.hasStack()) {
+		if (slot2 != null && slot2.hasStack())
+		{
 			ItemStack itemStack2 = slot2.getStack();
 			itemStack = itemStack2.copy();
-			if (slot < super.getRows() * 9) {//如果点击位置在容器内部
-				if (!this.insertItemEx(itemStack2, slot,super.getRows() * 9, this.slots.size(), true)) {
+			if (slot < super.getRows() * 9)
+			{//如果点击位置在容器内部
+				if (!this.insertItemEx(itemStack2, slot,super.getRows() * 9, this.slots.size(), true))
+				{
 					return ItemStack.EMPTY;
 				}
-			} else if (!this.insertItemEx(itemStack2, slot,0, super.getRows() * 9, false)) {//否则点击位置在玩家内部
+			}
+			else if (!this.insertItemEx(itemStack2, slot,0, super.getRows() * 9, false))
+			{//否则点击位置在玩家内部
 				return ItemStack.EMPTY;
 			}
 	
-			if (itemStack2.isEmpty()) {
+			if (itemStack2.isEmpty())
+			{
 				slot2.setStack(ItemStack.EMPTY);
-			} else {
+			}
+			else
+			{
 				slot2.markDirty();
 			}
 		}
@@ -254,36 +234,17 @@ public class CrafterVirtualGUI extends GenericContainerScreenHandler implements 
 		return itemStack;
 	}
 	
-	private void updateResult() {
-		if (this.player instanceof ServerPlayerEntity serverPlayerEntity) {
-			World world = serverPlayerEntity.getWorld();
-			var tmp = CrafterBlock.getCraftingRecipe(world, this.inputInventory).map((recipe) ->
-					recipe.craft(this.inputInventory, world.getRegistryManager()));
-			ItemStack itemStack;
-			if(tmp.isEmpty())
-			{
-				itemStack = VirtualInventory.TAG_EMPTY_STACK;
-			}
-			else
-			{
-				itemStack = tmp.get();
-				itemStack.getOrCreateNbt().putBoolean(VirtualInventory.VIRTUAL_ITEM_TAG, true);
-			}
-			
-			VirtualInventory.resultInventory.setStack(0, itemStack);
-		}
-		
-	}
-	
 	@Override
 	public void onSlotUpdate(ScreenHandler handler, int slotId, ItemStack stack)
 	{
-		this.updateResult();
+		if (this.player instanceof ServerPlayerEntity serverPlayerEntity)
+		{
+			this.VirtualInventory.UpdateCraftingRecipe(serverPlayerEntity.getWorld());
+		}
 	}
 
 	@Override
 	public void onPropertyUpdate(ScreenHandler handler, int property, int value)
 	{
-	
 	}
 }
