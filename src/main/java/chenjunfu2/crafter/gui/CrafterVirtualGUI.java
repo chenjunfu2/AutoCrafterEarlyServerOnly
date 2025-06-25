@@ -2,16 +2,22 @@ package chenjunfu2.crafter.gui;
 
 import chenjunfu2.crafter.block.CrafterBlock;
 import chenjunfu2.crafter.block.entity.CrafterBlockEntity;
-import chenjunfu2.crafter.screen.slot.CrafterOutputSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.*;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+
 
 public class CrafterVirtualGUI extends GenericContainerScreenHandler implements ScreenHandlerListener//ScreenHandler implements ScreenHandlerListener
 {
@@ -39,23 +45,42 @@ public class CrafterVirtualGUI extends GenericContainerScreenHandler implements 
 		this.blockEntity = blockEntity;
 		this.inputInventory = blockEntity;
 		
-		for(int slot : this.VirtualInventory.CRAFTER_SLOTS)
-		{
-			this.addSlot(new CrafterVirtualInputSlot(this.VirtualInventory, this.VirtualInventory.CRAFTER_SLOTS_MAP[slot],0,0,this));
-		}
-		this.addSlot(new CrafterVirtualOutputSlot(this.VirtualInventory.resultInventory, this.VirtualInventory.RESULT_SLOTS, 0, 0, this));
+		//for(int slot : this.VirtualInventory.CRAFTER_SLOTS)
+		//{
+		//	this.addSlot(new CrafterVirtualInputSlot(this.VirtualInventory, this.VirtualInventory.CRAFTER_SLOTS_MAP[slot],0,0,this));
+		//}
+		//this.addSlot(new CrafterVirtualOutputSlot(this.VirtualInventory.resultInventory, this.VirtualInventory.RESULT_SLOTS, 0, 0, this));
 		this.addListener(this);
+	}
+	
+	
+	void playSound(PlayerEntity player,
+	               RegistryEntry<SoundEvent> sound,
+	               SoundCategory category,
+	               float volume,
+	               float pitch)
+	{
+		if(player instanceof ServerPlayerEntity serverPlayerEntity)
+		{
+			serverPlayerEntity.networkHandler.sendPacket(new PlaySoundS2CPacket(sound, category, serverPlayerEntity.getX(), serverPlayerEntity.getY(), serverPlayerEntity.getZ(), volume, pitch, serverPlayerEntity.getWorld().getRandom().nextLong()));
+		}
 	}
 	
 	private void setSlotEnabled(int slotId, boolean enabled, PlayerEntity player) {
 		this.blockEntity.setSlotEnabled(slotId, enabled);
 		this.sendContentUpdates();
-		player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.4F, enabled ? 1.0F : 0.75F);
+		playSound(player, SoundEvents.UI_BUTTON_CLICK, SoundCategory.MASTER, 0.4F, enabled ? 1.0F : 0.75F);
 	}
 	
 	@Override
 	public void onSlotClick(int slot, int button, SlotActionType actionType, PlayerEntity player)
 	{
+		if(slot < 0)
+		{
+			super.onSlotClick(slot, button, actionType, player);
+			return;
+		}
+		
 		if (VirtualInventory.canUseSlot(slot) && !player.isSpectator()) {
 			int mapSlot = VirtualInventory.CRAFTER_SLOTS_MAP[slot];
 			switch (actionType)
@@ -65,7 +90,8 @@ public class CrafterVirtualGUI extends GenericContainerScreenHandler implements 
 				{
 					this.setSlotEnabled(mapSlot,true,player);
 				}
-				else if (this.blockEntity.getStack(mapSlot).isEmpty())
+				else if (this.blockEntity.getStack(mapSlot).isEmpty() &&
+						 this.getCursorStack().isEmpty())
 				{
 					this.setSlotEnabled(mapSlot,false,player);
 				}
@@ -79,7 +105,21 @@ public class CrafterVirtualGUI extends GenericContainerScreenHandler implements 
 			}
 		}
 		
+		Slot slot1 = this.getSlot(slot);
+		ItemStack stack = slot1.getStack();
+		
+		NbtCompound nbt = stack.getNbt();
+		if(nbt!=null && nbt.get(VirtualInventory.VIRTUAL_ITEM_TAG) != null)
+		{
+			if(nbt.getBoolean(VirtualInventory.VIRTUAL_ITEM_TAG))
+			{
+				//stack.setCount(0);
+				return;
+			}
+		}
+		
 		super.onSlotClick(slot, button, actionType, player);
+		//this.sendContentUpdates();//强制更新回去
 	}
 	
 	private boolean canUseSlot(int slotIdx)
@@ -218,7 +258,8 @@ public class CrafterVirtualGUI extends GenericContainerScreenHandler implements 
 		if (this.player instanceof ServerPlayerEntity serverPlayerEntity) {
 			World world = serverPlayerEntity.getWorld();
 			ItemStack itemStack = CrafterBlock.getCraftingRecipe(world, this.inputInventory).map((recipe) ->
-					recipe.craft(this.inputInventory, world.getRegistryManager())).orElse(ItemStack.EMPTY);
+					recipe.craft(this.inputInventory, world.getRegistryManager())).orElse(VirtualInventory.TAG_EMPTY_STACK);
+			itemStack.setNbt(VirtualInventory.VIRTUAL_ITEM_NBT);
 			VirtualInventory.resultInventory.setStack(0, itemStack);
 		}
 		

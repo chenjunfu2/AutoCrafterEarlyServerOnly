@@ -1,18 +1,21 @@
 package chenjunfu2.crafter.gui;
-import chenjunfu2.crafter.Crafter;
 
 import chenjunfu2.crafter.block.entity.CrafterBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.CraftingResultInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.RecipeInputInventory;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 
 import java.util.Arrays;
 
 public class CrafterVirtualInventory implements Inventory
 {
+	public static final String VIRTUAL_ITEM_TAG = new String("Crafter$Virtual$Item");
+	public static final NbtCompound VIRTUAL_ITEM_NBT = MakeVirtualItemNbt();
+	
 	public static final int NUM_COLUMNS = 9;
 	public static final int NUM_ROWS = 3;
 	public static final int SLOTS_SIZE = 9 * 3;
@@ -25,13 +28,30 @@ public class CrafterVirtualInventory implements Inventory
 	public static final int RESULT_SLOTS = 16;//合成产物显示
 	
 	public final ItemStack EMPTY_STACK = ItemStack.EMPTY;
-	public final ItemStack LOCK_STACK = new ItemStack(Items.BARRIER,1);
-	public final ItemStack DISABLE_STACK = new ItemStack(Items.RED_STAINED_GLASS_PANE,1);
-	public final ItemStack TRIGGERED_STACK = new ItemStack(Items.REDSTONE,1);
-	public final ItemStack UNTRIGGERED_STACK = new ItemStack(Items.GUNPOWDER,1);
+	public final ItemStack TAG_EMPTY_STACK = MakeVirtualItemWithTag(Items.AIR,1);
+	public final ItemStack LOCK_STACK = MakeVirtualItemWithTag(Items.BARRIER,1);
+	public final ItemStack DISABLE_STACK = MakeVirtualItemWithTag(Items.RED_STAINED_GLASS_PANE,1);
+	public final ItemStack TRIGGERED_STACK = MakeVirtualItemWithTag(Items.REDSTONE,1);
+	public final ItemStack UNTRIGGERED_STACK = MakeVirtualItemWithTag(Items.GUNPOWDER,1);
 	
 	private final CrafterBlockEntity blockEntity;
 	public final CraftingResultInventory resultInventory = new CraftingResultInventory();
+	
+	static NbtCompound MakeVirtualItemNbt()
+	{
+		var tmpTag = new NbtCompound();
+		tmpTag.putBoolean(VIRTUAL_ITEM_TAG, true);//插入自定义标签
+		return tmpTag;
+	}
+	
+	
+	static ItemStack MakeVirtualItemWithTag(ItemConvertible item, int count)
+	{
+		var tmpItem = new ItemStack(item,count);//创建物品
+		tmpItem.setNbt(VIRTUAL_ITEM_NBT);//插入标签
+		
+		return tmpItem;
+	}
 	
 	static int[] MakeSlotsMap(int[] mapKeyArr, int valSize, int mapSize, int mapNull)
 	{
@@ -59,7 +79,7 @@ public class CrafterVirtualInventory implements Inventory
 	
 	public boolean canUseSlot(int slot)
 	{
-		if(slot < 0 || slot > SLOTS_SIZE)
+		if(slot < 0 || slot >= SLOTS_SIZE)
 		{
 			return false;
 		}
