@@ -3,13 +3,13 @@
 	"id": "crafter",
 	"version": "${version}",
 	"name": "crafter",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Auto Crafter Early And Server Only!",
 	"authors": [
-		"Me!"
+		"chenjunfu2"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "NULL",
+		"sources": "https://github.com/chenjunfu2/AutoCrafterEarlyServerOnly"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/crafter/icon.png",
