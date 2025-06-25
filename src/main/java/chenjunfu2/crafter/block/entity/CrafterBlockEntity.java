@@ -69,8 +69,7 @@ public class CrafterBlockEntity extends LootableContainerBlockEntity implements 
 	
 	@Override
 	protected Text getContainerName() {
-		//return Text.translatable("container.crafter");
-		return Text.of("合成器");
+		return Text.translatable("container.crafter");
 	}
 	
 	@Override
