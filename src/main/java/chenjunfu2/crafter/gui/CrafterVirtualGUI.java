@@ -257,9 +257,19 @@ public class CrafterVirtualGUI extends GenericContainerScreenHandler implements 
 	private void updateResult() {
 		if (this.player instanceof ServerPlayerEntity serverPlayerEntity) {
 			World world = serverPlayerEntity.getWorld();
-			ItemStack itemStack = CrafterBlock.getCraftingRecipe(world, this.inputInventory).map((recipe) ->
-					recipe.craft(this.inputInventory, world.getRegistryManager())).orElse(VirtualInventory.TAG_EMPTY_STACK);
-			itemStack.setNbt(VirtualInventory.VIRTUAL_ITEM_NBT);
+			var tmp = CrafterBlock.getCraftingRecipe(world, this.inputInventory).map((recipe) ->
+					recipe.craft(this.inputInventory, world.getRegistryManager()));
+			ItemStack itemStack;
+			if(tmp.isEmpty())
+			{
+				itemStack = VirtualInventory.TAG_EMPTY_STACK;
+			}
+			else
+			{
+				itemStack = tmp.get();
+				itemStack.getOrCreateNbt().putBoolean(VirtualInventory.VIRTUAL_ITEM_TAG, true);
+			}
+			
 			VirtualInventory.resultInventory.setStack(0, itemStack);
 		}
 		
